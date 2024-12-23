@@ -1,23 +1,35 @@
 resource "proxmox_vm_qemu" "ubuntu" {
+  cpu_type    = "host"
+  agent       = 1 
   vmid        = 200
-  name        = "VM-name"
+  name        = "Production"
   target_node = "pve"
-
-  disks {
-    ide {
-      ide2 {
-        cdrom {
-          iso = "ISO file"
-        }
-      }
-    }
+  bios        = "ovmf"
+  memory      = 2048
+  cores       = 2
+  sockets     = 1
+  scsihw      = "virtio-scsi-pci"
+  qemu_os     = "l26"
+  os_type    = "cloud-init"
+  clone = "ubuntu-template"
+  # full_clone = true
+  hotplug = "disk,network,usb"
+  network {
+    model  = "virtio"
+    bridge = "vmbr0"
+    id     = 0  
   }
 
-  ### or for a Clone VM operation
-  # clone = "template to clone"
-
-  ### or for a PXE boot VM operation
-  # pxe = true
-  # boot = "scsi0;net0"
-  # agent = 0
+  disk {
+    slot         = "scsi0"
+    size         = "20G"
+    storage      = "local-lvm"
+    type         = "disk"
+    cache        = "writethrough"
+  }
+  disk {
+    slot         = "ide2"
+    storage      = "local-lvm"
+    type         = "cloudinit"
+    }
 }
